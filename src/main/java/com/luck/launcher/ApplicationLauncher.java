@@ -14,14 +14,14 @@
  * limitations under the License.
  *
  */
-package com.luck.aggregator;
+package com.luck.launcher;
 
 import org.apache.tuscany.sca.node.Contribution;
         import org.apache.tuscany.sca.node.ContributionLocationHelper;
         import org.apache.tuscany.sca.node.Node;
         import org.apache.tuscany.sca.node.NodeFactory;
 
-public class AggregatorLauncher {
+public class ApplicationLauncher {
     public static void main(String[] args) throws Exception {
         System.out.println("Starting ...");
         String contribution = ContributionLocationHelper.getContributionLocation("application.composite");
