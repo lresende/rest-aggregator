@@ -67,6 +67,20 @@ public class AggregatorResourceTest {
     }
 
     @Test
+    public void testInvalidAggregateCSV() throws Exception {
+        String csvFileLocation = this.getClass().getClassLoader().getResource("invalid.csv").getPath();
+        System.out.println("Test Input file: " + csvFileLocation);
+
+        WebConversation wc = new WebConversation();
+        WebRequest request = new PostMethodWebRequest(SERVICE_ENDPOINT + "/csv?keyColumn=last_name&valueColumn=count", true);
+        request.selectFile("body", new File(csvFileLocation), "application/csv");
+        WebResponse response = wc.getResource(request);
+
+        assertThat(response.getResponseCode()).isEqualTo(500);
+        assertThat(response.getText().contains("Error aggregating data source: For input string: \"ten\""));
+    }
+
+    @Test
     public void testMissingKeyColumnShouldFail() throws Exception {
         String csvFileLocation = this.getClass().getClassLoader().getResource("input.csv").getPath();
         System.out.println("Test Input file: " + csvFileLocation);
@@ -86,6 +100,20 @@ public class AggregatorResourceTest {
 
         WebConversation wc = new WebConversation();
         WebRequest request = new PostMethodWebRequest(SERVICE_ENDPOINT + "/csv?keyColumn=last_name", true);
+        request.selectFile("body", new File(csvFileLocation), "application/csv");
+        WebResponse response = wc.getResource(request);
+
+        assertThat(response.getResponseCode()).isEqualTo(500);
+    }
+
+
+    @Test
+    public void testInvalidColumnShouldFail() throws Exception {
+        String csvFileLocation = this.getClass().getClassLoader().getResource("input.csv").getPath();
+        System.out.println("Test Input file: " + csvFileLocation);
+
+        WebConversation wc = new WebConversation();
+        WebRequest request = new PostMethodWebRequest(SERVICE_ENDPOINT + "/csv?keyColumn=last_name&valueColumn=invalid", true);
         request.selectFile("body", new File(csvFileLocation), "application/csv");
         WebResponse response = wc.getResource(request);
 

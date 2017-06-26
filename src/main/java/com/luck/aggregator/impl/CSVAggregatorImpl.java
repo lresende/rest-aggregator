@@ -18,6 +18,7 @@ package com.luck.aggregator.impl;
 
 import com.google.common.util.concurrent.AtomicLongMap;
 import com.luck.aggregator.Aggregator;
+import com.sun.javaws.exceptions.InvalidArgumentException;
 import com.univocity.parsers.common.ParsingContext;
 import com.univocity.parsers.common.processor.RowProcessor;
 import com.univocity.parsers.csv.CsvParser;
@@ -51,7 +52,16 @@ public class CSVAggregatorImpl implements Aggregator {
 
         AggregatorContext context = new AggregatorContext(resultMap, keyColumn, valueColumn);
         CsvParser parser = createParser(context);
-        List<String[]> allRows = parser.parseAll(sourceReader);
+
+        try {
+            parser.parseAll(sourceReader);
+        } catch(Throwable e) {
+            if(logger.isDebugEnabled()) {
+                logger.debug("Error aggregating data source: " + e.getCause().getMessage(), e);
+            }
+
+            throw new RuntimeException("Error aggregating data source: " + e.getCause().getMessage(), e);
+        }
 
         return resultMap.asMap();
     }
@@ -94,8 +104,8 @@ public class CSVAggregatorImpl implements Aggregator {
 
     class AggregatorRowProcessor implements RowProcessor {
         private final AggregatorContext aggregatorContext;
-        private int columnKeyIndex;
-        private int columnValueIndex;
+        private int columnKeyIndex = -1;
+        private int columnValueIndex = -1;
 
         public AggregatorRowProcessor(AggregatorContext aggregatorContext) {
             this.aggregatorContext = aggregatorContext;
@@ -103,12 +113,42 @@ public class CSVAggregatorImpl implements Aggregator {
 
         @Override
         public void processStarted(ParsingContext context) {
-            this.columnKeyIndex = context.indexOf(this.aggregatorContext.getColumnKey());
-            this.columnValueIndex = context.indexOf(this.aggregatorContext.getColumnValue());
+            try {
+                this.columnKeyIndex = context.indexOf(this.aggregatorContext.getColumnKey());
+            } catch (ArrayIndexOutOfBoundsException e) {
+                if( logger.isDebugEnabled() ) {
+                    logger.debug("Invalid columnKey provided: [" + this.aggregatorContext.getColumnKey() + "]" );
+                }
+                throw new  IllegalArgumentException("Invalid columnKey provided: [" + this.aggregatorContext.getColumnKey() + "]");
+            }
+
+            try {
+                this.columnValueIndex = context.indexOf(this.aggregatorContext.getColumnValue());
+            } catch (ArrayIndexOutOfBoundsException e) {
+                if( logger.isDebugEnabled() ) {
+                    logger.debug("Invalid columnValue provided: [" + this.aggregatorContext.getColumnValue() + "]" );
+                }
+                throw new  IllegalArgumentException("Invalid columnValue provided: [" + this.aggregatorContext.getColumnValue() + "]" );
+            }
+
         }
 
         @Override
         public void rowProcessed(String[] row, ParsingContext context) {
+            if( this.columnKeyIndex < 0) {
+                if( logger.isDebugEnabled() ) {
+                    logger.debug("Invalid columnKey provided: [" + this.aggregatorContext.getColumnKey() + "]" );
+                }
+                throw new  IllegalArgumentException("Invalid columnKey provided: [" + this.aggregatorContext.getColumnKey() + "]");
+            }
+
+            if(this.columnValueIndex < 0) {
+                if( logger.isDebugEnabled() ) {
+                    logger.debug("Invalid columnValue provided: [" + this.aggregatorContext.getColumnValue() + "]" );
+                }
+                throw new  IllegalArgumentException("Invalid columnValue provided: [" + this.aggregatorContext.getColumnValue() + "]" );
+            }
+
             String key = row[this.columnKeyIndex];
             Double value = Double.parseDouble(row[this.columnValueIndex]);
 

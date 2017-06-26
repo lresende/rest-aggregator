@@ -88,7 +88,11 @@ public class AggregatorResourceImpl implements AggregatorResource {
             if(logger.isDebugEnabled()) {
                 logger.debug("Error processing file part: " + e.getMessage(), e);
             }
-            return Response.serverError().status(Response.Status.INTERNAL_SERVER_ERROR).build();
+            return Response
+                    .status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity(e.getMessage() + "\n")
+                    .type(MediaType.TEXT_PLAIN)
+                    .build();
         }
 
 
@@ -96,7 +100,11 @@ public class AggregatorResourceImpl implements AggregatorResource {
             if(logger.isDebugEnabled()) {
                 logger.debug("Internal error processing result: Result is NULL");
             }
-            return Response.serverError().status(Response.Status.INTERNAL_SERVER_ERROR).build();
+            return Response
+                    .status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity("Internal error processing result: Result is NULL" + "\n")
+                    .type(MediaType.TEXT_PLAIN)
+                    .build();
         } else {
             return processResponseMap(result);
         }
