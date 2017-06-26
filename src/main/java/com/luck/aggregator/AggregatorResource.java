@@ -24,11 +24,12 @@ import org.apache.wink.common.model.multipart.InMultiPart;
 import org.oasisopen.sca.annotation.Remotable;
 
 @Remotable
-public interface Resource {
+public interface AggregatorResource {
 
     @POST
     @Path("/csv")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
+    @Produces(MediaType.TEXT_PLAIN)
     public Response aggregateCSV(InMultiPart multiParts,
                                  @QueryParam("separator") @DefaultValue(",") String separator,
                                  @QueryParam("keyColumn") String keyColumn,

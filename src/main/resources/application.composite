@@ -22,12 +22,18 @@
 		
 
 	<component name="ResourceComponent">
-		<implementation.java class="com.luck.aggregator.impl.ResourceImpl"/>
-		<service name="Resource">
-			<tuscany:binding.rest uri="http://localhost:8080/services/aggregator">
-    		    <tuscany:wireFormat.json />
-			    <tuscany:operationSelector.jaxrs />
-    		</tuscany:binding.rest>
+		<implementation.java class="com.luck.aggregator.impl.AggregatorResourceImpl"/>
+		<service name="AggregatorResource">
+			<tuscany:binding.rest uri="http://localhost:8080/services/aggregator" />
    		</service>
+   		<reference name="aggregatorService" target="AggregatorServiceComponent/Aggregator" />
 	</component>
+
+	<component name="AggregatorServiceComponent">
+		<implementation.java class="com.luck.aggregator.impl.CSVAggregatorImpl"/>
+		<service name="Aggregator">
+		   <binding.sca />
+		</service>
+	</component>
+
 </composite>

@@ -34,7 +34,7 @@ import com.meterware.httpunit.WebResponse;
 
 import java.io.File;
 
-public class ResourceTest {
+public class AggregatorResourceTest {
     private static String SERVICE_ENDPOINT = "http://localhost:8080/services/aggregator";
 
     private static Node node;
@@ -52,7 +52,7 @@ public class ResourceTest {
     }
 
     @Test
-    public void TestAggregateCSV() throws Exception {
+    public void testAggregateCSV() throws Exception {
         String csvFileLocation = this.getClass().getClassLoader().getResource("input.csv").getPath();
         System.out.println("Test Input file: " + csvFileLocation);
 
@@ -61,8 +61,35 @@ public class ResourceTest {
         request.selectFile("body", new File(csvFileLocation), "application/csv");
         WebResponse response = wc.getResource(request);
 
-        System.out.println(response.getHeaderField("location"));
+        System.out.println(">>> Test Result");
+        System.out.println(response.getText());
         assertThat(response.getResponseCode()).isEqualTo(200);
+    }
+
+    @Test
+    public void testMissingKeyColumnShouldFail() throws Exception {
+        String csvFileLocation = this.getClass().getClassLoader().getResource("input.csv").getPath();
+        System.out.println("Test Input file: " + csvFileLocation);
+
+        WebConversation wc = new WebConversation();
+        WebRequest request = new PostMethodWebRequest(SERVICE_ENDPOINT + "/csv?valueColumn=count", true);
+        request.selectFile("body", new File(csvFileLocation), "application/csv");
+        WebResponse response = wc.getResource(request);
+
+        assertThat(response.getResponseCode()).isEqualTo(500);
+    }
+
+    @Test
+    public void testMissingValueColumnShouldFail() throws Exception {
+        String csvFileLocation = this.getClass().getClassLoader().getResource("input.csv").getPath();
+        System.out.println("Test Input file: " + csvFileLocation);
+
+        WebConversation wc = new WebConversation();
+        WebRequest request = new PostMethodWebRequest(SERVICE_ENDPOINT + "/csv?keyColumn=last_name", true);
+        request.selectFile("body", new File(csvFileLocation), "application/csv");
+        WebResponse response = wc.getResource(request);
+
+        assertThat(response.getResponseCode()).isEqualTo(500);
     }
 
 }
